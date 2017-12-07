@@ -10,7 +10,7 @@ entity QueryDatabaseResult
 entity DatabaseAdapter
 database Database
 
-User -> GUI : View Reprt onClick()
+User -> GUI : View Report onClick()
 GUI -> UserClass : HasPermission()
 GUI <- UserClass : true or false
 alt false

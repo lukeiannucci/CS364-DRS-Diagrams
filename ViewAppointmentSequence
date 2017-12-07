@@ -1,6 +1,6 @@
 @startuml
 
-title "View Appointment - Sequence Diagram"
+title "View Appointments - Sequence Diagram"
 
 actor "Authenticated User" as User
 boundary GUI
@@ -30,11 +30,7 @@ alt true
     DatabaseService <- QueryDatabaseResult : Array[int][Array[Key][Value]]
     GUI <- DatabaseService : List<Appointment>
     GUI -> PersonalCalendar : setAppointments()
-    activate PersonalCalendar
-    GUI -> PersonalCalendar : display()
-    GUI <- PersonalCalendar : View
     User <- GUI : Display Personal Calendar
-    deactivate PersonalCalendar
 else false
     DatabaseService -> QueryDatabaseResult : getErrorMessage()
     DatabaseService <- QueryDatabaseResult : string

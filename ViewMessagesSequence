@@ -1,0 +1,42 @@
+@startuml
+
+title "View Messages - Sequence Diagram"
+
+actor "Authenticated User" as User
+boundary GUI
+entity DatabaseService
+entity QueryDatabaseResult
+entity DatabaseAdapter
+database Database
+
+User -> GUI : View Messages onClick()
+GUI -> DatabaseService : select<Messages>({User, user})
+activate DatabaseService 
+DatabaseService -> DatabaseService : buildSelectStatement() 
+DatabaseService -> DatabaseService : buildWhereClause() 
+DatabaseService -> DatabaseAdapter : executeQueryStatement()
+activate DatabaseAdapter
+DatabaseAdapter -> Database : connect()
+DatabaseAdapter -> Database : Data Request
+DatabaseAdapter <- Database : Data Result
+DatabaseAdapter -> Database : disconnect()
+DatabaseService <- DatabaseAdapter : QueryDatabaseResult
+deactivate DatabaseAdapter
+DatabaseService -> QueryDatabaseResult : isSuccessful()
+DatabaseService <- QueryDatabaseResult : true or false
+alt true
+    DatabaseService -> QueryDatabaseResult : getResult()
+    DatabaseService <- QueryDatabaseResult : Array[int][Array[Key][Value]]
+    GUI <- DatabaseService : List<Messages>
+    User <- GUI : Display Messages
+else false
+    DatabaseService -> QueryDatabaseResult : getErrorMessage()
+    DatabaseService <- QueryDatabaseResult : string
+    DatabaseService -> QueryDatabaseResult : getErrorCode()
+    DatabaseService <- QueryDatabaseResult : int
+    deactivate DatabaseService
+    GUI <- DatabaseService : Throw Error
+    User <- GUI : Display Error
+end    
+
+@enduml

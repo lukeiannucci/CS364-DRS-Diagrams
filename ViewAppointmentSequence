@@ -1,0 +1,49 @@
+@startuml
+
+title "View Appointment - Sequence Diagram"
+
+actor "Authenticated User" as User
+boundary GUI
+entity PersonalCalendar
+entity DatabaseService
+entity QueryDatabaseResult
+entity DatabaseAdapter
+database Database
+
+User -> GUI : onLogin()
+GUI -> DatabaseService : select<Appointment>({User, user})
+activate DatabaseService 
+DatabaseService -> DatabaseService : buildSelectStatement() 
+DatabaseService -> DatabaseService : buildWhereClause() 
+DatabaseService -> DatabaseAdapter : executeQueryStatement()
+activate DatabaseAdapter
+DatabaseAdapter -> Database : connect()
+DatabaseAdapter -> Database : Data Request
+DatabaseAdapter <- Database : Data Result
+DatabaseAdapter -> Database : disconnect()
+DatabaseService <- DatabaseAdapter : QueryDatabaseResult
+deactivate DatabaseAdapter
+DatabaseService -> QueryDatabaseResult : isSuccessful()
+DatabaseService <- QueryDatabaseResult : true or false
+alt true
+    DatabaseService -> QueryDatabaseResult : getResult()
+    DatabaseService <- QueryDatabaseResult : Array[int][Array[Key][Value]]
+    GUI <- DatabaseService : List<Appointment>
+    GUI -> PersonalCalendar : setAppointments()
+    activate PersonalCalendar
+    GUI -> PersonalCalendar : display()
+    GUI <- PersonalCalendar : View
+    User <- GUI : Display Personal Calendar
+    deactivate PersonalCalendar
+else false
+    DatabaseService -> QueryDatabaseResult : getErrorMessage()
+    DatabaseService <- QueryDatabaseResult : string
+    DatabaseService -> QueryDatabaseResult : getErrorCode()
+    DatabaseService <- QueryDatabaseResult : int
+    deactivate DatabaseService
+    GUI <- DatabaseService : Throw Error
+    User <- GUI : Display Error
+end    
+
+
+@enduml

@@ -1,0 +1,45 @@
+@startuml
+
+title "Cancel Appointment - Sequence Diagram"
+
+actor "Authenticated User" as User
+boundary GUI
+entity PersonalCalendar
+entity DatabaseService
+entity CommandDatabaseResult
+entity DatabaseAdapter
+database Database
+
+User -> GUI : Cancel Appointment onClick()
+GUI -> DatabaseService : deleteById<Appointment>(int)
+activate DatabaseService 
+DatabaseService -> DatabaseService : buildDeleteStatement() 
+DatabaseService -> DatabaseService : buildWhereClause() 
+DatabaseService -> DatabaseAdapter : executeCommandStatement()
+activate DatabaseAdapter
+DatabaseAdapter -> Database : connect()
+DatabaseAdapter -> Database : beginTransaction()
+DatabaseAdapter -> Database : Data Request
+DatabaseAdapter <- Database : Data Result
+DatabaseAdapter -> Database : endTransaction()
+DatabaseAdapter -> Database : disconnect()
+DatabaseService <- DatabaseAdapter : CommandDatabaseResult 
+deactivate DatabaseAdapter
+DatabaseService -> CommandDatabaseResult : isSuccessful()
+DatabaseService <- CommandDatabaseResult : true or false
+alt true
+    GUI <- DatabaseService : true
+    GUI -> PersonalCalendar : setAppointments()
+    User <- GUI : Display Personal Calendar
+else false
+    DatabaseService -> CommandDatabaseResult : getErrorMessage()
+    DatabaseService <- CommandDatabaseResult : string
+    DatabaseService -> CommandDatabaseResult : getErrorCode()
+    DatabaseService <- CommandDatabaseResult : int
+    deactivate DatabaseService
+    GUI <- DatabaseService : Throw Error
+    User <- GUI : Display Error
+end    
+
+
+@enduml

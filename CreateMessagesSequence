@@ -1,0 +1,43 @@
+@startuml
+
+title "Create Messages - Sequence Diagram"
+
+actor "Authenticated User" as User
+boundary GUI
+entity Messages
+entity DatabaseService
+entity CommandDatabaseResult
+entity DatabaseAdapter
+database Database
+
+User -> GUI : Send Messages onClick()
+GUI -> Messages : new
+GUI -> DatabaseService : insert<Messages>()
+activate DatabaseService 
+DatabaseService -> DatabaseService : buildInsertStatement() 
+DatabaseService -> DatabaseAdapter : executeCommandStatement()
+activate DatabaseAdapter
+DatabaseAdapter -> Database : connect()
+DatabaseAdapter -> Database : beginTransaction()
+DatabaseAdapter -> Database : Data Request
+DatabaseAdapter <- Database : Data Result
+DatabaseAdapter -> Database : endTransaction()
+DatabaseAdapter -> Database : disconnect()
+DatabaseService <- DatabaseAdapter : CommandDatabaseResult
+deactivate DatabaseAdapter
+DatabaseService -> CommandDatabaseResult : isSuccessful()
+DatabaseService <- CommandDatabaseResult : true or false
+alt true
+    GUI <- DatabaseService : true
+    User <- GUI : Display Success Result
+else false
+    DatabaseService -> CommandDatabaseResult : getErrorMessage()
+    DatabaseService <- CommandDatabaseResult : string
+    DatabaseService -> CommandDatabaseResult : getErrorCode()
+    DatabaseService <- CommandDatabaseResult : int
+    deactivate DatabaseService
+    GUI <- DatabaseService : Throw Error
+    User <- GUI : Display Error
+end    
+
+@enduml

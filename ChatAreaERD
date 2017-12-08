@@ -53,7 +53,7 @@ class ChatMessage {
 
 enum ChatMessageType {
     Sent
-    Recieved
+    Received
 }
 
 ChatMessage *-right- ChatMessageType : > has 1
